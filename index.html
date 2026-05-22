@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>امیر هکتور VPN</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #f5c518;
+    --orange: #ff6b00;
+    --dark: #0a0a0f;
+    --darker: #050508;
+    --card: #0f0f1a;
+    --border: rgba(245,197,24,0.15);
+    --text: #e8e8f0;
+    --muted: #6b6b8a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Vazirmatn', sans-serif;
+    background: var(--darker);
+    color: var(--text);
+    overflow-x: hidden;
+    cursor: crosshair;
+  }
+
+  /* BACKGROUND */
+  .bg-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 20% 20%, rgba(255,107,0,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 80% at 80% 80%, rgba(245,197,24,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 100% 100% at 50% 50%, rgba(10,10,20,0.95) 0%, transparent 100%);
+  }
+
+  .grid-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background-image:
+      linear-gradient(rgba(245,197,24,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(245,197,24,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    animation: gridMove 20s linear infinite;
+  }
+
+  @keyframes gridMove {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(60px); }
+  }
+
+  .noise {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+  }
+
+  /* PARTICLES */
+  .particles { position: fixed; inset: 0; z-index: 0; overflow: hidden; }
+  .particle {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: var(--gold);
+    border-radius: 50%;
+    animation: float linear infinite;
+    opacity: 0;
+  }
+  @keyframes float {
+    0% { transform: translateY(100vh) translateX(0); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translateY(-100px) translateX(100px); opacity: 0; }
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.2rem 3rem;
+    background: rgba(5,5,8,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    font-size: 1.3rem;
+    font-weight: 900;
+    letter-spacing: 0.05em;
+  }
+
+  .logo-icon {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, var(--gold), var(--orange));
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    box-shadow: 0 0 20px rgba(245,197,24,0.3);
+  }
+
+  .logo span { color: var(--gold); }
+
+  .nav-btn {
+    background: linear-gradient(135deg, var(--gold), var(--orange));
+    color: #000;
+    border: none;
+    padding: 0.6rem 1.5rem;
+    border-radius: 6px;
+    font-family: 'Vazirmatn', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s;
+    box-shadow: 0 0 20px rgba(245,197,24,0.2);
+  }
+  .nav-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 30px rgba(245,197,24,0.4);
+  }
+
+  /* MAIN */
+  main { position: relative; z-index: 1; }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 8rem 2rem 4rem;
+    position: relative;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(245,197,24,0.1);
+    border: 1px solid rgba(245,197,24,0.3);
+    border-radius: 100px;
+    padding: 0.4rem 1.2rem;
+    font-size: 0.8rem;
+    color: var(--gold);
+    margin-bottom: 2rem;
+    animation: fadeDown 0.8s ease forwards;
+    letter-spacing: 0.1em;
+  }
+
+  .pulse-dot {
+    width: 8px; height: 8px;
+    background: #00ff88;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.4); }
+  }
+
+  .hero h1 {
+    font-size: clamp(2.5rem, 7vw, 5rem);
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+    animation: fadeUp 0.8s 0.2s ease both;
+  }
+
+  .hero h1 .highlight {
+    background: linear-gradient(135deg, var(--gold), var(--orange));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: block;
+  }
+
+  .hero p {
+    font-size: 1.1rem;
+    color: var(--muted);
+    max-width: 500px;
+    line-height: 1.8;
+    margin-bottom: 3rem;
+    animation: fadeUp 0.8s 0.4s ease both;
+  }
+
+  .hero-btns {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    animation: fadeUp 0.8s 0.6s ease both;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--gold), var(--orange));
+    color: #000;
+    border: none;
+    padding: 1rem 2.5rem;
+    border-radius: 8px;
+    font-family: 'Vazirmatn', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s;
+    box-shadow: 0 4px 30px rgba(245,197,24,0.3);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 40px rgba(245,197,24,0.5);
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 1rem 2.5rem;
+    border-radius: 8px;
+    font-family: 'Vazirmatn', sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .btn-secondary:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+    transform: translateY(-3px);
+  }
+
+  /* STATS BAR */
+  .stats-bar {
+    display: flex;
+    justify-content: center;
+    gap: 4rem;
+    padding: 2rem;
+    margin-top: 4rem;
+    border-top: 1px solid var(--border);
+    animation: fadeUp 0.8s 0.8s ease both;
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    text-align: center;
+  }
+
+  .stat-num {
+    font-size: 2rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--gold), var(--orange));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .stat-label {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 0.2rem;
+    letter-spacing: 0.05em;
+  }
+
+  /* FEATURES */
+  .section {
+    padding: 6rem 2rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .section-title {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  .section-title h2 {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 900;
+    margin-bottom: 0.5rem;
+  }
+
+  .section-title p {
+    color: var(--muted);
+    font-size: 1rem;
+  }
+
+  .tag {
+    display: inline-block;
+    background: rgba(245,197,24,0.1);
+    border: 1px solid rgba(245,197,24,0.2);
+    color: var(--gold);
+    padding: 0.3rem 1rem;
+    border-radius: 100px;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    margin-bottom: 1rem;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .feature-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .feature-card:hover {
+    border-color: rgba(245,197,24,0.3);
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+  }
+
+  .feature-card:hover::before { opacity: 1; }
+
+  .feature-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    display: block;
+  }
+
+  .feature-card h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--gold);
+  }
+
+  .feature-card p {
+    font-size: 0.9rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  /* PLANS */
+  .plans-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.2rem;
+  }
+
+  .plan-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.8rem;
+    text-align: center;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .plan-card.featured {
+    border-color: var(--gold);
+    box-shadow: 0 0 40px rgba(245,197,24,0.15);
+  }
+
+  .plan-card.featured::after {
+    content: '⭐ محبوب';
+    position: absolute;
+    top: 12px; left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, var(--gold), var(--orange));
+    color: #000;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.2rem 0.8rem;
+    border-radius: 100px;
+    white-space: nowrap;
+  }
+
+  .plan-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(245,197,24,0.4);
+  }
+
+  .plan-gb {
+    font-size: 2.5rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--gold), var(--orange));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+    margin-bottom: 0.3rem;
+    margin-top: 1.5rem;
+  }
+
+  .plan-unit {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 1rem;
+  }
+
+  .plan-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+  }
+
+  .plan-btn {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.7rem;
+    border-radius: 8px;
+    font-family: 'Vazirmatn', sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-decoration: none;
+    display: block;
+  }
+
+  .plan-card.featured .plan-btn {
+    background: linear-gradient(135deg, var(--gold), var(--orange));
+    border-color: transparent;
+    color: #000;
+  }
+
+  .plan-btn:hover {
+    background: linear-gradient(135deg, var(--gold), var(--orange));
+    border-color: transparent;
+    color: #000;
+  }
+
+  /* REFERRAL */
+  .referral-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 3rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .referral-box::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, rgba(245,197,24,0.05) 0%, transparent 70%);
+  }
+
+  .referral-box h2 {
+    font-size: 2rem;
+    font-weight: 900;
+    margin-bottom: 1rem;
+  }
+
+  .referral-box p {
+    color: var(--muted);
+    margin-bottom: 2rem;
+    font-size: 1rem;
+    line-height: 1.8;
+  }
+
+  .referral-steps {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+    margin-bottom: 2rem;
+  }
+
+  .referral-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .step-num {
+    width: 48px; height: 48px;
+    background: linear-gradient(135deg, var(--gold), var(--orange));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    color: #000;
+    font-size: 1.1rem;
+  }
+
+  .step-text {
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2rem;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.85rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  footer a {
+    color: var(--gold);
+    text-decoration: none;
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* SCROLL REVEAL */
+  .reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: all 0.7s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* GLOW ORBS */
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.15;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .orb-1 {
+    width: 400px; height: 400px;
+    background: var(--orange);
+    top: -100px; right: -100px;
+    animation: orbMove 8s ease-in-out infinite;
+  }
+  .orb-2 {
+    width: 300px; height: 300px;
+    background: var(--gold);
+    bottom: 20%; left: -100px;
+    animation: orbMove 12s ease-in-out infinite reverse;
+  }
+  @keyframes orbMove {
+    0%, 100% { transform: translate(0,0); }
+    50% { transform: translate(30px, 30px); }
+  }
+
+  /* MOBILE */
+  @media (max-width: 768px) {
+    nav { padding: 1rem 1.5rem; }
+    .stats-bar { gap: 2rem; }
+    .referral-box { padding: 2rem 1.5rem; }
+    .section { padding: 4rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-layer"></div>
+<div class="grid-bg"></div>
+<div class="noise"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<div class="particles" id="particles"></div>
+
+<nav>
+  <div class="logo">
+    <div class="logo-icon">🛡️</div>
+    <div>امیر <span>هکتور</span></div>
+  </div>
+  <a href="https://t.me/YourBotUsername" class="nav-btn" target="_blank">🤖 ورود به ربات</a>
+</nav>
+
+<main>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-badge">
+      <div class="pulse-dot"></div>
+      سرورها آنلاین هستند
+    </div>
+
+    <h1>
+      بهترین VPN
+      <span class="highlight">امیر هکتور</span>
+    </h1>
+
+    <p>
+      سرعت بالا، پینگ پایین، امنیت کامل.<br>
+      ایده‌آل برای گیمینگ، استریم و دور زدن فیلترینگ.
+    </p>
+
+    <div class="hero-btns">
+      <a href="https://t.me/YourBotUsername" class="btn-primary" target="_blank">
+        🚀 شروع کن
+      </a>
+      <a href="#plans" class="btn-secondary">
+        💎 مشاهده پلن‌ها
+      </a>
+    </div>
+
+    <div class="stats-bar">
+      <div class="stat">
+        <div class="stat-num">+۵۰۰۰</div>
+        <div class="stat-label">کاربر فعال</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">۹۹٪</div>
+        <div class="stat-label">آپتایم سرور</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">۲۴/۷</div>
+        <div class="stat-label">پشتیبانی</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">۱Gbps</div>
+        <div class="stat-label">سرعت سرور</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="section">
+    <div class="section-title reveal">
+      <div class="tag">✦ امکانات</div>
+      <h2>چرا امیر هکتور؟</h2>
+      <p>همه چیزی که برای یه تجربه آنلاین بی‌نقص نیاز داری</p>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card reveal">
+        <span class="feature-icon">⚡</span>
+        <h3>سرعت فوق‌العاده</h3>
+        <p>سرورهای پرسرعت با پینگ پایین، مخصوص گیمینگ و استریم بدون وقفه.</p>
+      </div>
+      <div class="feature-card reveal">
+        <span class="feature-icon">🔒</span>
+        <h3>امنیت کامل</h3>
+        <p>رمزنگاری پیشرفته برای حفاظت کامل از اطلاعات و حریم خصوصی تو.</p>
+      </div>
+      <div class="feature-card reveal">
+        <span class="feature-icon">🤖</span>
+        <h3>ربات تلگرام</h3>
+        <p>خرید، مدیریت و دریافت کانفیگ مستقیماً از ربات تلگرام. سریع و آسان.</p>
+      </div>
+      <div class="feature-card reveal">
+        <span class="feature-icon">🎮</span>
+        <h3>مناسب گیمینگ</h3>
+        <p>پینگ پایین و اتصال پایدار برای PUBG، فری‌فایر و تمام بازی‌های آنلاین.</p>
+      </div>
+      <div class="feature-card reveal">
+        <span class="feature-icon">👥</span>
+        <h3>سیستم رفرال</h3>
+        <p>با دعوت از دوستانت کانفیگ رایگان بگیر. هر ۵ دعوت = ۱۰۰ مگ هدیه!</p>
+      </div>
+      <div class="feature-card reveal">
+        <span class="feature-icon">🧪</span>
+        <h3>تست رایگان</h3>
+        <p>قبل از خرید، با کانفیگ تست رایگان کیفیت سرویس ما رو امتحان کن.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PLANS -->
+  <section class="section" id="plans">
+    <div class="section-title reveal">
+      <div class="tag">✦ پلن‌ها</div>
+      <h2>انتخاب پلن مناسب</h2>
+      <p>برای خرید وارد ربات تلگرام شو</p>
+    </div>
+
+    <div class="plans-grid reveal">
+      <div class="plan-card">
+        <div class="plan-gb">۱</div>
+        <div class="plan-unit">گیگابایت</div>
+        <div class="plan-name">اشتراک ۱ گیگ</div>
+        <a href="https://t.me/YourBotUsername" class="plan-btn" target="_blank">خرید از ربات</a>
+      </div>
+      <div class="plan-card">
+        <div class="plan-gb">۲</div>
+        <div class="plan-unit">گیگابایت</div>
+        <div class="plan-name">اشتراک ۲ گیگ</div>
+        <a href="https://t.me/YourBotUsername" class="plan-btn" target="_blank">خرید از ربات</a>
+      </div>
+      <div class="plan-card featured">
+        <div class="plan-gb">۵</div>
+        <div class="plan-unit">گیگابایت</div>
+        <div class="plan-name">اشتراک ۵ گیگ</div>
+        <a href="https://t.me/YourBotUsername" class="plan-btn" target="_blank">خرید از ربات</a>
+      </div>
+      <div class="plan-card">
+        <div class="plan-gb">۱۰</div>
+        <div class="plan-unit">گیگابایت</div>
+        <div class="plan-name">اشتراک ۱۰ گیگ</div>
+        <a href="https://t.me/YourBotUsername" class="plan-btn" target="_blank">خرید از ربات</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- REFERRAL -->
+  <section class="section">
+    <div class="referral-box reveal">
+      <div class="tag">✦ رفرال</div>
+      <h2>دوستاتو دعوت کن، هدیه بگیر 🎁</h2>
+      <p>
+        با دعوت از دوستانت به ربات امیر هکتور،<br>
+        به ازای هر ۵ نفر یه کانفیگ ۱۰۰ مگ رایگان هدیه میگیری!
+      </p>
+
+      <div class="referral-steps">
+        <div class="referral-step">
+          <div class="step-num">۱</div>
+          <div class="step-text">وارد ربات شو</div>
+        </div>
+        <div class="referral-step">
+          <div class="step-num">۲</div>
+          <div class="step-text">لینک رفرالت رو بگیر</div>
+        </div>
+        <div class="referral-step">
+          <div class="step-num">۳</div>
+          <div class="step-text">برای دوستات بفرست</div>
+        </div>
+        <div class="referral-step">
+          <div class="step-num">۵</div>
+          <div class="step-text">کانفیگ رایگان بگیر!</div>
+        </div>
+      </div>
+
+      <a href="https://t.me/YourBotUsername" class="btn-primary" target="_blank">
+        👥 شروع رفرال
+      </a>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>ساخته شده با ❤️ توسط <a href="https://t.me/YourBotUsername">امیر هکتور</a> | تمامی حقوق محفوظ است</p>
+</footer>
+
+<script>
+  // Particles
+  const container = document.getElementById('particles');
+  for (let i = 0; i < 30; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.animationDuration = (Math.random() * 15 + 10) + 's';
+    p.style.animationDelay = (Math.random() * 10) + 's';
+    p.style.width = p.style.height = (Math.random() * 3 + 1) + 'px';
+    container.appendChild(p);
+  }
+
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 100);
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(el => observer.observe(el));
+
+  // Smooth scroll
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      document.querySelector(a.getAttribute('href'))?.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+</script>
+
+</body>
+</html>
